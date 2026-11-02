@@ -1,4 +1,4 @@
-FROM ghcr.io/nforceroh/k8s-nginx-php:latest
+FROM ghcr.io/nforceroh/nginx-php:latest
 
 ARG \
   BUILD_DATE=now \
