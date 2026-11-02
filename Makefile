@@ -16,4 +16,6 @@ test: build
 	./tests/run_tests.sh "$(IMAGE):$(TAG)"
 
 run: build
-	docker run --rm -it -p 8080:8080 $(IMAGE):$(TAG)
+	docker run --rm -it \
+		-p 8080:8080 \
+		$(IMAGE):$(TAG)
