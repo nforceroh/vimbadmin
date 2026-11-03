@@ -21,13 +21,15 @@ start by `init-vimbadmin`):
 | `VIMBADMIN_DB_PASSWORD` | `vimbadmin2` | database password — set a real value via your deployment's secret |
 | `VIMBADMIN_DB_HOST` | `db` | database host |
 | `ADMIN_EMAIL` | `postmaster@example.com` | address used for the admin setup flow |
-| `ADMIN_PASSWORD` | `CHANGEME` | initial admin password — set a real value via your deployment's secret |
+| `ADMIN_PASSWORD` | `CHANGEME` | declared by the Dockerfile, but not currently consumed by the bundled initialization script |
 | `SMTP_HOST` | `mail` | mail transport host |
-| `OPCACHE_MEM_SIZE` | `64` | opcache memory, MB |
+| `OPCACHE_MEM_SIZE` | `64` | declared by the Dockerfile; PHP opcache configuration is not currently generated from this variable |
 
-`ADMIN_PASSWORD` and `VIMBADMIN_DB_PASSWORD` are credential-shaped: the Dockerfile
-defaults are placeholders, and real values arrive at runtime (Kubernetes Secret,
-`--env-file`, etc.).
+`ADMIN_PASSWORD` is not used by the current container initialization script;
+configure the application's administrator account through its supported setup
+flow. `VIMBADMIN_DB_PASSWORD` is used in the generated database configuration
+and must be replaced with a real runtime secret. Do not rely on the
+Dockerfile's example defaults for production.
 
 ## Runtime layout
 
@@ -46,6 +48,29 @@ make build   # build the image
 make test    # build, then run tests/run_tests.sh
 make run     # run with 8080 published
 ```
+
+The image requires a reachable MySQL-compatible database and SMTP host. For
+example, run it on a private network after setting the database values and
+mounting any PHP drop-ins:
+
+```sh
+docker run -d --name vimbadmin \
+  --restart unless-stopped \
+  --network mail \
+  -p 8080:8080 \
+  -e VIMBADMIN_DB_HOST=mariadb \
+  -e VIMBADMIN_DB_NAME=vimbadmin \
+  -e VIMBADMIN_DB_USER=vimbadmin \
+  -e VIMBADMIN_DB_PASSWORD='replace-with-a-secret' \
+  -e ADMIN_EMAIL=postmaster@example.com \
+  -e SMTP_HOST=postfix \
+  ghcr.io/nforceroh/vimbadmin:latest
+```
+
+Create and initialize the ViMbAdmin database according to its upstream
+installation instructions before starting this image. Prefer your platform's
+secret store for database credentials, and keep the web interface behind TLS
+and appropriate access controls.
 
 CI is the only publisher — see
 [nforceroh/.github](https://github.com/nforceroh/.github) for the shared build and
