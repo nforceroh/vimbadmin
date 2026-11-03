@@ -63,6 +63,14 @@ check "directory /data/web exists" in_image 'test -d /data/web'
 check "application installed at INSTALL_PATH" in_image 'test -f /data/web/vimbadmin/public/index.php'
 check "composer autoload generated" in_image 'test -f /data/web/vimbadmin/vendor/autoload.php'
 check "composer on PATH" in_image 'command -v composer'
+# doctrine's XML mapping driver needs simplexml; the login action loads it.
+# Regression: the PHP 8.5 refactor dropped this extension and login 500'd with
+# "Call to undefined function simplexml_load_string()".
+check "simplexml loaded (doctrine XML mapping)" \
+	in_image 'php -r "exit(function_exists(\"simplexml_load_string\") ? 0 : 1);"'
+check "ctype loaded" in_image 'php -r "exit(extension_loaded(\"ctype\") ? 0 : 1);"'
+check "zip loaded" in_image 'php -r "exit(extension_loaded(\"zip\") ? 0 : 1);"'
+check "iconv loaded" in_image 'php -r "exit(extension_loaded(\"iconv\") ? 0 : 1);"'
 check "application.ini.dist present (runtime generates the ini)" \
 	in_image 'test -f /data/web/vimbadmin/application/configs/application.ini.dist'
 check "pinned release installed" \

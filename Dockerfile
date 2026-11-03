@@ -27,7 +27,10 @@ ENV LANG=en_US.utf8 \
     COMPOSER_ALLOW_SUPERUSER=1
 
 ### Install ViMbAdmin from a pinned release
+# php85-simplexml/ctype/iconv/zip/gettext: required by ViMbAdmin (doctrine XML
+# mapping needs simplexml) but not in the nginx-php base.
 RUN apk add --no-cache git mysql-client \
+      php85-simplexml php85-ctype php85-iconv php85-zip php85-gettext \
   && mkdir -p ${INSTALL_PATH} \
   && curl -fsSL "https://github.com/opensolutions/ViMbAdmin/archive/refs/tags/${VIMBADMIN_VERSION}.tar.gz" \
       | tar xz --strip-components=1 -C ${INSTALL_PATH} \
