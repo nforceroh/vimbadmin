@@ -60,6 +60,14 @@ check "s6 service database is populated" \
 # --- static filesystem checks (need no external services) -------------------
 
 check "directory /data/web exists" in_image 'test -d /data/web'
+check "application installed at INSTALL_PATH" in_image 'test -f /data/web/vimbadmin/public/index.php'
+check "composer autoload generated" in_image 'test -f /data/web/vimbadmin/vendor/autoload.php'
+check "composer on PATH" in_image 'command -v composer'
+check "application.ini.dist present (runtime generates the ini)" \
+	in_image 'test -f /data/web/vimbadmin/application/configs/application.ini.dist'
+check "pinned release installed" \
+	in_image 'grep -q "ViMbAdmin" /data/web/vimbadmin/composer.json'
+check "app owned by www-data" in_image 'test "$(stat -c %U /data/web/vimbadmin)" = www-data'
 
 # --- boot check -------------------------------------------------------------
 # Leaf images need external services (databases, rspamd, ...) to settle, so
